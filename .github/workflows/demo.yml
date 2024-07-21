@@ -18,7 +18,10 @@ jobs:
             gstreamer1.0-libav libgstrtspserver-1.0-dev libges-1.0-dev
         
       
-      - name: Build outputs
+      - name: Build outputs (default features)
         run: |
           cargo build --release
+      - name: Build outputs (image)
+        run: |
+          cargo build --release --features image
       - run: echo "🍏 This job's status is ${{ job.status }}."
