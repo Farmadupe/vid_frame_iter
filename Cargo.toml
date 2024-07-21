@@ -7,10 +7,6 @@ version = "0.2.0"
 crate-type = ["lib"]
 name = "vid_frame_iter"
 
-[features]
-default = ["dep:image"]
-
-
 [dependencies]
 glib = { version = "0.20" }
 gstreamer = "0.23"
@@ -22,4 +18,4 @@ image = { version = "0.25", default-features = false, optional = true }
 
 [dev-dependencies]
 url = "2"
-image = { version = "0.25", default-features = false }
+
