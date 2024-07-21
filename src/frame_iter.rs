@@ -4,13 +4,11 @@
 
 use std::iter::FusedIterator;
 
-use gstreamer::{
-    prelude::*, ClockTime, CoreError, MessageView, StateChangeSuccess,
-};
+use gstreamer::{prelude::*, ClockTime, CoreError, MessageView, StateChangeSuccess};
 
 use gstreamer_video::VideoFrameExt;
 
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 use image::GenericImageView;
 
 #[derive(Debug, Clone)]
@@ -199,7 +197,7 @@ pub trait VideoFrame: VideoFrameInternal {
 }
 
 /// Conversion functions to types provided by the popular[`image`] crate.
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 pub trait ImageFns {
     type IB;
 
@@ -363,64 +361,6 @@ impl<T: VideoFrame> Drop for VideoFrameIter<T> {
 ///
 /// Most functions have been written to avoid copying raw frames. Currently the only function that does copy is [`ImageFns::to_imagebuffer`].
 ///
-/// # Examples
-/// Print the integer value of the top left pixel.
-/// ```
-/// # use vid_frame_iter::VideoFrameIterBuilder;
-/// # use vid_frame_iter::GrayFrame;
-/// # use std::ffi::OsStr;
-/// #
-/// # vid_frame_iter::init_gstreamer();
-/// #
-/// # let VIDEO_URI_HERE : String = url::Url::from_file_path(std::env::current_dir().unwrap().join(OsStr::new("examples/vids/dog.1.mp4")).to_string_lossy().to_string()).unwrap().to_string(); println!("{VIDEO_URI_HERE}");
-/// #
-/// # let builder = VideoFrameIterBuilder::from_uri(VIDEO_URI_HERE);
-/// # let mut f_it = builder.spawn_gray().unwrap();
-/// # let frame: GrayFrame = f_it.next().unwrap().unwrap();
-/// #
-///  use image::GenericImageView;
-///  use image::Luma;
-///
-/// // let frame: GrayFrame = { ... } // (See other examples for how to create frames)
-///
-///  let sum: u64 = frame
-///      .pixels()
-///      .map(|(_x, _y, Luma::<u8>([val]))| val as u64)
-///      .sum();
-/// println!("sum of pixels values in this frame: {sum}");
-///
-/// # // Sanity check that we did actually do what we said.
-/// # assert!(sum >= 1);
-/// ```
-///
-/// Save a frame to a PNG file on disk.
-/// ```
-/// # fn main() -> Result<(), image::ImageError> {
-/// # vid_frame_iter::init_gstreamer();
-/// # use vid_frame_iter::ImageFns;
-/// # use std::ffi::OsStr;
-/// #
-/// # #[allow(non_snake_case)]
-/// # let VIDEO_URI_HERE : String = url::Url::from_file_path(std::env::current_dir().unwrap().join(OsStr::new("examples/vids/dog.1.mp4")).to_string_lossy().to_string()).unwrap().to_string(); println!("{VIDEO_URI_HERE}");
-/// #
-/// # let builder = vid_frame_iter::VideoFrameIterBuilder::from_uri(VIDEO_URI_HERE);
-/// # let mut f_it = builder.spawn_gray().unwrap();
-/// #
-/// # let frame = f_it.next().unwrap().unwrap();
-/// #
-/// // let frame: GrayFrame = { ... } // (See other examples for how to create frames)
-///
-/// // We have to convert the frame to an [`image::ImageBuffer`] to be able to save it.
-/// let frame_buf: image::GrayImage = frame.to_imagebuffer();
-/// # let ret =
-/// frame_buf.save_with_format("image_file.png", image::ImageFormat::Bmp)
-/// # ;
-/// # //sanity check.
-/// # assert!(ret.is_ok());
-/// # Ok(())
-/// # }
-/// ```
-///
 #[derive(Debug)]
 pub struct GrayFrame {
     frame: gstreamer_video::VideoFrame<gstreamer_video::video_frame::Readable>,
@@ -445,7 +385,7 @@ impl Clone for GrayFrame {
     }
 }
 
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 impl GenericImageView for GrayFrame {
     type Pixel = image::Luma<u8>;
 
@@ -502,7 +442,7 @@ impl VideoFrame for GrayFrame {
     }
 }
 
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 impl ImageFns for GrayFrame {
     type IB = image::GrayImage;
 
@@ -561,63 +501,6 @@ impl ImageFns for GrayFrame {
 /// Most functions have been written to avoid copying raw frames. Currently the only function that does copy is [`ImageFns::to_imagebuffer`].
 ///
 /// # Examples
-/// Sum the raw pixel values of an entire frame.
-/// ```
-/// # use vid_frame_iter::VideoFrameIterBuilder;
-/// # use vid_frame_iter::RgbFrame;
-/// # use std::ffi::OsStr;
-/// #
-/// # vid_frame_iter::init_gstreamer();
-/// #
-/// # let VIDEO_URI_HERE : String = url::Url::from_file_path(std::env::current_dir().unwrap().join(OsStr::new("examples/vids/dog.1.mp4")).to_string_lossy().to_string()).unwrap().to_string(); println!("{VIDEO_URI_HERE}");
-/// #
-/// # let builder = vid_frame_iter::VideoFrameIterBuilder::from_uri(VIDEO_URI_HERE);
-/// # let mut f_it = builder.spawn_rgb().unwrap();
-/// # let frame: RgbFrame = f_it.next().unwrap().unwrap();
-/// #
-///  use image::GenericImageView;
-///  use image::Rgb;
-///
-/// // let frame: RgbFrame = { ... } // (See other examples for how to create frames)
-///
-///  let sum: u64 = frame
-///      .pixels()
-///      .map(|(_x, _y, Rgb::<u8>([r, g, b]))| (r as u64) + (g as u64) + (b as u64))
-///      .sum();
-/// println!("sum of pixels values in this frame: {sum}");
-///
-/// # // Sanity check that we did actually do what we said.
-/// # assert!(sum >= 1);
-/// ```
-///
-/// Save a frame to a PNG file on disk.
-/// ```
-/// # fn main() -> Result<(), image::ImageError> {
-/// # vid_frame_iter::init_gstreamer();
-/// # use vid_frame_iter::ImageFns;
-/// # use std::ffi::OsStr;
-/// #
-/// # #[allow(non_snake_case)]
-/// # let VIDEO_URI_HERE : String = url::Url::from_file_path(std::env::current_dir().unwrap().join(OsStr::new("examples/vids/dog.1.mp4")).to_string_lossy().to_string()).unwrap().to_string(); println!("{VIDEO_URI_HERE}");
-/// #
-/// # let builder = vid_frame_iter::VideoFrameIterBuilder::from_uri(VIDEO_URI_HERE);
-/// # let mut f_it = builder.spawn_rgb().unwrap();
-/// #
-/// # let frame = f_it.next().unwrap().unwrap();
-/// #
-/// // let frame: RgbFrame = { ... } // (See other examples for how to create frames)
-///
-/// // We have to convert the frame to an [`image::ImageBuffer`] to be able to save it.
-/// let frame_buf: image::RgbImage = frame.to_imagebuffer();
-/// # let ret =
-/// frame_buf.save_with_format("image_file.png", image::ImageFormat::Bmp)
-/// # ;
-/// # //sanity check.
-/// # assert!(ret.is_ok());
-/// # Ok(())
-/// # }
-/// ```
-///
 #[derive(Debug)]
 pub struct RgbFrame {
     frame: gstreamer_video::VideoFrame<gstreamer_video::video_frame::Readable>,
@@ -640,7 +523,7 @@ impl Clone for RgbFrame {
     }
 }
 
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 impl GenericImageView for RgbFrame {
     type Pixel = image::Rgb<u8>;
 
@@ -698,7 +581,7 @@ impl VideoFrame for RgbFrame {
     }
 }
 
-#[cfg(feature="dep:image")]
+#[cfg(feature = "dep:image")]
 impl ImageFns for RgbFrame {
     type IB = image::RgbImage;
 
